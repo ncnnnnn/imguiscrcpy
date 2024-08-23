@@ -14,6 +14,8 @@
 #include <string>
 #include <thread>
 
+
+#include "adb_api.h"
 namespace App
 {
 
@@ -220,9 +222,60 @@ namespace App
 		ImGui::End();
 	}
 
-	// ADBHelper.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+	const GUID kAdbInterfaceId = ANDROID_USB_CLASS_ID;
+	int interface_count = 0;
+#define SPINT_ACTIVE  0x00000001
+#define SPINT_DEFAULT 0x00000002
+#define SPINT_REMOVED 0x00000004
+	int adbGetDev() {
 
+		// Enumerate interfaces
+		ADBAPIHANDLE enum_handle =
+			AdbEnumInterfaces(kAdbInterfaceId, true, true, true);
+		if (NULL == enum_handle) {
+			printf("\nEnum interfaces failure:");
+			printf("\nUnable to enumerate ADB interfaces: %u", GetLastError());
+			return false;
+		}
+
+		// Unite interface info structure and buffer big enough to contain the
+		// largest structure.
+		union {
+			AdbInterfaceInfo interface_info;
+			char buf[4096];
+		};
+		unsigned long buf_size = sizeof(buf);
+
+		// Enumerate (and count) interfaces, printing information for each found
+		// interface.
+		interface_count = 0;
+		while (AdbNextInterface(enum_handle, &interface_info, &buf_size)) {
+			interface_count++;
+			printf("\nFound interface %ws:", interface_info.device_name);
+			if (interface_info.flags & SPINT_ACTIVE)
+				printf(" ACTIVE");
+			if (interface_info.flags & SPINT_DEFAULT)
+				printf(" DEFAULT");
+			if (interface_info.flags & SPINT_REMOVED)
+				printf(" REMOVED");
+
+			buf_size = sizeof(buf);
+		}
+
+		bool ret = true;
+		if (GetLastError() != ERROR_NO_MORE_ITEMS) {
+			printf("\n--- AdbNextInterface failure %u", GetLastError());
+			ret = false;
+		}
+
+		if (!AdbCloseHandle(enum_handle)) {
+			printf("\n--- AdbCloseHandle failure %u", GetLastError());
+			ret = false;
+		}
+
+
+		return 0;
+	}
 
 
 
@@ -243,7 +296,7 @@ namespace App
 			char debug_buf[1024] = { 0 };
 			if ((fp = _popen("adb devices", "r")) != NULL)
 			{
-				::ShowWindow(::GetConsoleWindow(), SW_HIDE);//hide console window
+				//::ShowWindow(::GetConsoleWindow(), SW_HIDE);//hide console window
 				while (fgets(debug_buf, 255, fp) != NULL)
 				{
 

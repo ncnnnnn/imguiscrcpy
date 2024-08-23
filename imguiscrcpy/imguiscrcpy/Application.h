@@ -27,5 +27,7 @@ namespace App
 	void ShowPageView4();
 
 	int getDevices();
+
+	int adbGetDev();
 }
 
