@@ -15,10 +15,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int main(int, char**)
 {
+	App::getDevices();
+
 	// Create application window
 	WNDCLASSEX wc = { sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, _T("ImGui Example"), NULL };
 	::RegisterClassEx(&wc);
-	HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("Dear ImGui GDI Example"), WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, NULL, NULL, wc.hInstance, NULL);
+	HWND hwnd = ::CreateWindow(wc.lpszClassName, _T("ImGui Scrcpy"), WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, NULL, NULL, wc.hInstance, NULL);
 
 	// Show the window
 	::ShowWindow(hwnd, SW_SHOWDEFAULT);
